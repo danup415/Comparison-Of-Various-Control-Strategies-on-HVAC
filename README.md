@@ -34,6 +34,4 @@ The runtime files remain together at the root because the builder and model use 
 
 The `.gitignore` excludes MATLAB editor/build/cache files only. It deliberately keeps the `.slx`, MAT files, weather file, and existing plots trackable.
 
-## Before publishing
 
-Review the GitHub Desktop changed-files list and confirm it contains only the files you intend to share. Choose private visibility unless you intend to make the source, datasets, and results public. No GitHub repository has been created or uploaded by this preparation.
