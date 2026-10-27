@@ -1,0 +1,17 @@
+# MATLAB editor backups and autosaves
+*.asv
+*.m~
+*.autosave
+
+# Simulink generated build/cache folders
+slprj/
+*_ert_rtw/
+*_grt_rtw/
+*.slxc
+
+# Operating-system metadata
+Thumbs.db
+.DS_Store
+
+# Intentional project artifacts are not ignored:
+# *.slx, *.mat, *.png, and *.epw remain trackable.
