@@ -74,22 +74,6 @@ paper/preprint/              long-form preprint (article class) + numbers genera
 docs/                        verification record and change log
 ```
 
-## Building the papers
-
-Each folder under `paper/` compiles on its own:
-
-```
-pdflatex main && bibtex main && pdflatex main && pdflatex main
-```
-
-`paper/ieee` and `paper/springer` can be uploaded to Overleaf as they are.
-
-After re-running the simulations, refresh the numbers in all three papers with:
-
-```
-python3 paper/preprint/make_numbers.py
-```
-
 ## Simulink
 
 - `simulink/build_simulink_wrapper.m` builds a fixed-step (900 s) Simulink model whose
