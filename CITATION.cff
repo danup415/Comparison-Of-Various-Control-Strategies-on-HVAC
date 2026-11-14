@@ -5,6 +5,7 @@ authors:
   - family-names: Deshmukh
     given-names: Anup
     affiliation: "Vishwakarma Institute of Technology, Pune, India"
+    email: deshmukhanup.415@gmail.com ; anup.deshmukh23@vit.edu
 type: software
 keywords:
   - model predictive control
