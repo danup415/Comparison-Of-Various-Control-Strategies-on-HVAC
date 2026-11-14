@@ -1,0 +1,35 @@
+\documentclass[11pt]{article}
+% Journal-neutral preprint layout. For submission, move the sections into the target
+% journal's template (e.g. elsarticle for Energy and Buildings / J. Building Engineering).
+\usepackage[a4paper,margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,graphicx,booktabs,xcolor}
+\usepackage[hidelinks]{hyperref}
+\graphicspath{{../../results/figures/}}
+\input{sections/numbers}
+\title{Economic MPC, PID, deep Q-learning and hybrid control of residential cooling in a
+composite climate: a reproducible year-long benchmark for a Pune apartment with VRF,
+indirect evaporative cooling and dedicated outdoor air}
+\author{Anup Deshmukh\thanks{Department of Instrumentation and Control Engineering,
+Vishwakarma Institute of Technology, Pune, India. \textcolor{red}{[Add co-authors,
+affiliations, ORCID and corresponding e-mail.]}}}
+\date{}
+\begin{document}
+\maketitle
+\input{sections/abstract}
+\input{sections/intro}
+\input{sections/methods}
+\input{sections/results}
+\input{sections/discussion}
+\input{sections/limits}
+\input{sections/conclusion}
+
+\section*{Data and code availability}
+All code, the weather file and the scripts that generate every table and figure are
+openly available at \textcolor{red}{[repository URL / Zenodo DOI]}. The study is
+reproduced with \texttt{run\_all.m} in MATLAB (no toolboxes) or GNU Octave.
+
+\section*{Declaration of competing interest}
+The authors declare no competing interests.
+
+\input{sections/references}
+\end{document}

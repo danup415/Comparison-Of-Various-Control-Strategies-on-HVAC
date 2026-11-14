@@ -1,0 +1,35 @@
+\section{Conclusions}\label{sec:conclusion}
+This year-long, multi-seed benchmark of residential cooling control for a Pune
+apartment supports five conclusions.
+\begin{enumerate}
+\item With a realistic thermostat as the baseline and a fair discomfort metric,
+      advanced controllers pay off mainly in comfort and fewer compressor starts, and
+      (except the DQN) in lower peak demand. They do not reduce cost relative to the
+      thermostat.
+\item Among controllers that deliver good comfort, the hierarchical Hybrid (economic MPC
+      with a PI correction layer and safety override) is best. It costs
+      \RelHybPidCost\,\% less than SIMC-tuned PID and \RelHybMpcCost\,\% less than
+      E-MPC, with \RelHybPidKh\,\% and \RelHybMpcKh\,\% less discomfort respectively.
+      The ranking holds under a +3\,K heatwave, thermal mass, the tested tariffs (on comfort) and
+      a \UqN-sample variation of eleven assumed inputs. The size of the saving over
+      PID varies with the inputs ($\UqHPcostLo$\ to $\UqHPcostHi$\,\%). The PI layer
+      provides the cost saving, and the safety override provides most of the
+      comfort gain.
+\item A DQN with a safety shield, multi-seed training and a separate validation set is
+      competitive. Without the shield it is not, and its performance varies with the
+      training seed.
+\item A hypothetical three-tier ToD tariff with a 1.7:1 price ratio produces little load
+      shifting, because peak-window cooling serves occupied zones and coincides with
+      heat release from the roof slab. A 3.6:1 ratio shifts about 5 percentage points of
+      cooling energy. Under the actual MSEDCL residential structure the Hybrid
+      remains the most comfortable and 4\,\% cheaper than PID, with the DQN within
+      0.1\,\% of it on cost.
+\item Indoor air quality depends on ventilation and filtration design, not on the
+      thermal controller. Recirculating HEPA filtration keeps PM$_{2.5}$ well below
+      outdoor levels. A demand-controlled dehumidifying DOAS removes most humid hours,
+      at an energy cost of about a quarter of annual electricity that deserves dedicated
+      control.
+\end{enumerate}
+Future work should calibrate the model against measured data or EnergyPlus, add
+measured hourly PM$_{2.5}$, use adaptive and humidity-aware comfort metrics, and
+co-optimise ventilation with cooling in one MPC.

@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this model or code, please cite it as below."
+title: "Residential Cooling Control Benchmark for a Pune Apartment: Economic MPC, Deep Q-Learning and Hybrid Control"
+authors:
+  - family-names: Deshmukh
+    given-names: Anup
+    affiliation: "Vishwakarma Institute of Technology, Pune, India"
+type: software
+keywords:
+  - model predictive control
+  - reinforcement learning
+  - HVAC
+  - building energy
+  - indoor air quality

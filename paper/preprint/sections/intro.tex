@@ -1,0 +1,59 @@
+\section{Introduction}\label{sec:intro}
+Space-cooling electricity demand in India is growing rapidly as room air-conditioner
+ownership rises and urban heat intensifies \cite{iea2023}. Pune's composite climate
+places three different demands on residential cooling: a hot, dry pre-monsoon with
+afternoon peaks near 41\,$^\circ$C, a humid monsoon in which latent loads and
+ventilation dominate, and a mild winter that needs no cooling at all. Most homes are
+still controlled by the on/off thermostat of a split air conditioner. That thermostat
+ignores three things: time-of-day (ToD) tariffs; the thermal inertia of reinforced-concrete
+roofs; and the way vapour-compression, evaporative and fresh-air equipment interact.
+
+Model predictive control (MPC) uses forecasts and a building model to trade energy cost
+against comfort \cite{drgona2020,yao2021}. Deep reinforcement learning (DRL) learns a
+policy from interaction with a simulator or a building \cite{yu2021,sierla2022}. Hybrid
+schemes combine predictive and feedback layers \cite{arroyo2022}. Three gaps remain:
+\begin{enumerate}
+  \item Comparisons are often reported against weak baselines, or with results that
+        cannot be reproduced. Many studies omit plant--model mismatch, forecast errors
+        and repeated runs.
+  \item Indian residential case studies that use typical-year weather, the national
+        comfort range, ToD tariffs and the equipment actually installed in Indian homes
+        are scarce.
+  \item Thermal control and indoor air quality (IAQ) are rarely assessed together,
+        although ventilation and filtration choices interact with cooling energy.
+\end{enumerate}
+
+This paper compares five controllers on the same validated simulation model of a
+95\,m$^2$ Pune flat:
+\begin{itemize}
+  \item a split-AC thermostat;
+  \item SIMC-tuned PID;
+  \item economic MPC (E-MPC);
+  \item a parameter-shared double DQN;
+  \item a hybrid E-MPC/PI controller with a safety layer.
+\end{itemize}
+The contributions are:
+\begin{itemize}
+  \item An open, fully reproducible MATLAB/Octave benchmark of an Indian residence. It
+        comprises a two-node-per-zone RC model discretised exactly; ISHRAE weather; an
+        inverter VRF with part-load and latent behaviour; indirect evaporative cooling
+        (IEC); a dedicated outdoor-air system (DOAS) with energy recovery; and moisture,
+        CO$_2$ and PM$_{2.5}$ balances. A single script regenerates every number and
+        figure.
+  \item A like-for-like comparison under realistic information conditions:
+        plant--model mismatch, sensor noise and forecast error. All controllers share
+        one occupancy-based comfort schedule. Results are replicated over five seeds
+        with confidence intervals and paired tests.
+  \item A metric that separates cooling-induced discomfort from weather-driven cold,
+        which no controller can remove because the dwelling has no heating, together
+        with ToD cost, peak demand and peak-hour energy share.
+  \item Robustness and ablation analyses: a +3\,K heatwave, thermal mass, tariff
+        structure, model mismatch, MPC horizon, perfect information and DQN action
+        resolution.
+  \item An IAQ analysis of ventilation and filtration architectures, showing which
+        design choices, independent of the thermal controller, govern CO$_2$, PM$_{2.5}$
+        and humidity.
+\end{itemize}
+Section~\ref{sec:methods} describes the models and controllers,
+Section~\ref{sec:results} presents the results, Section~\ref{sec:discussion} discusses
+them, and Section~\ref{sec:limits} states the limitations.

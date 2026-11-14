@@ -1,0 +1,304 @@
+\section{Methodology}\label{sec:methods}
+
+\subsection{Case-study dwelling and climate}
+The case study is a 95\,m$^2$ top-floor three-bedroom flat in Pune, India
+(18.53\,$^\circ$N, 73.85\,$^\circ$E, 559\,m). Three conditioned zones are modelled:
+Zone~1, the master bedroom (30\,m$^2$, south and west facades); Zone~2, the living and
+dining room (45\,m$^2$, north and west); and Zone~3, the second bedroom (20\,m$^2$,
+north and east). The kitchen is unconditioned. The ceiling height is 2.85\,m, so the
+conditioned volume is 270.75\,m$^3$.
+
+The envelope consists of:
+\begin{itemize}
+  \item 200\,mm autoclaved aerated concrete (AAC) walls, $U=0.75$\,W\,m$^{-2}$K$^{-1}$;
+  \item a 150\,mm reinforced-concrete roof slab with insulation,
+        $U=1.2$\,W\,m$^{-2}$K$^{-1}$ (the Eco-Niwas Samhita limit);
+  \item uPVC double glazing, $U=2.8$\,W\,m$^{-2}$K$^{-1}$, SHGC $=0.55$, at a
+        window-to-wall ratio of 0.20, with month-dependent overhang (chajja) shading
+        of the direct beam.
+\end{itemize}
+Infiltration is 0.5\,ACH. Table~\ref{tab:params} lists all parameters; every value is
+defined in a single configuration file of the released code.
+
+Weather is the ISHRAE typical year for Pune (station 430630). Its dry-bulb temperature
+ranges from 4.9 to 41.0\,$^\circ$C, and the hottest hour of the mean day is 13:00--14:00.
+The dry pre-monsoon (March--May, mean relative humidity 39--56\,\%) contrasts with the
+humid monsoon (June--September, 79--86\,\%). Hourly records are interpolated to the
+15-min simulation step: temperatures and humidity ratio linearly, irradiance by holding
+each hour's value.
+
+Incident irradiance on each facade is computed from:
+\begin{itemize}
+  \item the solar position (Spencer declination and equation of time);
+  \item EPW direct-normal irradiance on the facade;
+  \item isotropic sky-diffuse and ground-reflected components (albedo 0.2).
+\end{itemize}
+Opaque surfaces see sol-air temperatures. The roof uses absorptance 0.7 and a long-wave
+correction of 63\,W\,m$^{-2}$; the walls use absorptance 0.4.
+
+Occupancy follows weekday and weekend schedules for four occupants: bedrooms are
+occupied at night, the living room in the morning and evening, and one person is at
+home during weekdays. Each occupant adds 75\,W sensible and 55\,W latent heat. Lighting
+(5\,W\,m$^{-2}$) and equipment (4.5\,W\,m$^{-2}$) follow fixed profiles. Thirty per
+cent of the 2\,kW cooking load enters Zone~2 during the 07:00--09:00 and 19:00--21:00
+cooking hours.
+
+\subsection{Thermal model}
+Each zone $z\in\{1,2,3\}$ has two nodes. The air node, $T_{a,z}$ (air and furnishings,
+capacitance $C_{a,z}$), and the thermal-mass node, $T_{m,z}$ (effective roof and floor
+slabs and walls, $C_{m,z}$), are coupled by interior convection $H_{am,z}$:
+\begin{align}
+C_{a,z}\dot T_{a,z} &= H_{am,z}(T_{m,z}-T_{a,z}) + (UA_{g,z}+H_{inf,z})(T_o-T_{a,z})
+  + \sum_{j\neq z} H_{zj}(T_{a,j}-T_{a,z}) \nonumber\\
+  &\quad + f_s Q_{sol,z} + f_c Q_{int,z} + Q_{vent,z} - Q_{c,z}, \label{eq:air}\\
+C_{m,z}\dot T_{m,z} &= H_{am,z}(T_{a,z}-T_{m,z}) + UA_{w,z}(T_{sa,w,z}-T_{m,z})
+  + UA_{r,z}(T_{sa,r}-T_{m,z}) \nonumber\\
+  &\quad + (1-f_s)Q_{sol,z} + (1-f_c)Q_{int,z}. \label{eq:mass}
+\end{align}
+The terms in Eqs.~\eqref{eq:air}--\eqref{eq:mass} are:
+\begin{itemize}
+  \item $Q_{sol,z}$: transmitted solar gain, of which $f_s=0.3$ goes to the air node;
+  \item $Q_{int,z}$: internal gain, convective fraction $f_c=0.6$;
+  \item $Q_{vent,z}$: sensible effect of DOAS and IEC supply air;
+  \item $Q_{c,z}$: sensible cooling delivered by the indoor unit.
+\end{itemize}
+In compact form, $\dot{x}=Ax+Bu+Ed$, with states
+$x=[T_{a,1..3},T_{m,1..3}]^\top$, inputs $u=Q_{c,1..3}$ and disturbances $d$. The model
+is discretised exactly with a zero-order hold at $\Delta t=900$\,s:
+\begin{equation}
+x_{k+1}=A_d x_k+B_d u_k+E_d d_k,\qquad
+\begin{bmatrix}A_d & B_d & E_d\end{bmatrix}
+=\begin{bmatrix}I&0&0\end{bmatrix}\exp\!\left(\begin{bmatrix}A&B&E\\0&0&0\end{bmatrix}\Delta t\right).
+\end{equation}
+Because the discretisation is exact, the update is unconditionally stable and needs no
+artificial temperature clamps. Over 24\,h it agrees with fine-step RK4 integration to
+$10^{-12}$\,K. The modal time constants are 0.35--0.43\,h for the air nodes and
+25--36\,h for the mass nodes (Table~\ref{tab:params}).
+
+\paragraph{Plant--model mismatch.}
+The model-based controllers use the nominal parameters, while the simulated "true"
+plant deviates from them:
+\begin{itemize}
+  \item mass capacitance $\times0.85$ and air capacitance $\times1.10$;
+  \item envelope conductances $\times1.10$;
+  \item solar gains $\times1.10$ and internal gains $\times1.15$.
+\end{itemize}
+Every controller receives zone air temperatures with Gaussian sensor noise
+($\sigma=0.1$\,K).
+
+\subsection{HVAC equipment}
+\paragraph{VRF.}
+An 11\,kW inverter outdoor unit serves indoor units of 3.5, 5.0 and 2.5\,kW (total
+capacity) in Zones~1--3. The model includes:
+\begin{itemize}
+  \item capacity derating of 0.8\,\%\,K$^{-1}$ above 35\,$^\circ$C;
+  \item rated COP 3.8 at 35\,$^\circ$C, with the energy input ratio rising by
+        2.5\,\%\,K$^{-1}$;
+  \item a part-load curve
+        $\mathrm{EIR}(\mathrm{PLR})=0.08+0.62\,\mathrm{PLR}+0.30\,\mathrm{PLR}^2$ down to
+        a minimum modulation of 20\,\%, with on--off cycling below it (degradation
+        coefficient 0.25);
+  \item a sensible heat ratio of 0.75 when the indoor humidity ratio exceeds the coil
+        apparatus dew point (0.0087\,kg\,kg$^{-1}$), and 1 otherwise;
+  \item 30\,W per running indoor fan;
+  \item an operating envelope of 10--50\,$^\circ$C outdoor, outside which the unit
+        delivers no cooling and draws no power.
+\end{itemize}
+
+\paragraph{Indirect evaporative cooler (IEC).}
+The IEC moves 0.35\,m$^3$\,s$^{-1}$ of outdoor air with product-air temperature
+$T_{sup}=T_o-0.8(T_o-T_{wb})$ and 180\,W of fan and pump power. One supervisory rule,
+identical for all controllers, enables it when four conditions hold: $T_o>28\,^\circ$C,
+outdoor RH below 50\,\%, cooling is requested, and
+$T_{sup}<\bar T_a-2$\,K. Its sensible effect,
+$\dot m c_p (T_{sup}-T_{a,z})$, enters the air nodes. Because the cooler is indirect,
+it adds no moisture, but its outdoor air does count in the CO$_2$, PM$_{2.5}$ and
+moisture balances.
+
+\paragraph{DOAS.}
+Continuous ventilation at the ASHRAE~62.2 whole-dwelling rate (28\,L\,s$^{-1}$) passes
+through:
+\begin{itemize}
+  \item an energy-recovery ventilator (sensible effectiveness 0.70, latent 0.60);
+  \item a MERV-13 filter (single-pass PM$_{2.5}$ efficiency 0.6);
+  \item a dehumidifying coil (COP 3), which runs only when the indoor humidity ratio
+        exceeds 0.0115\,kg\,kg$^{-1}$ and then supplies air at 15\,$^\circ$C and
+        $W\le0.0095$.
+\end{itemize}
+The original study's humidity-triggered DOAS (60\,L\,s$^{-1}$ when outdoor RH $>65$\,\%
+and $T_o>22\,^\circ$C) is kept as a scenario.
+
+\subsection{Moisture and indoor air quality}
+Indoor humidity ratio $W$, CO$_2$ concentration $C$ and PM$_{2.5}$ concentration $P$ are
+well-mixed balances over the conditioned volume $V$:
+\begin{align}
+\rho V\dot W &= \rho F_{inf}(W_o-W)+\rho F_{d}(W_{d}-W)+\rho F_{iec}(W_o-W)+G_{lat}-\dot m_{coil},\\
+V\dot C &= F_{out}(C_o-C)+n_{occ}\,g_{CO_2},\\
+V\dot P &= P_o\big(p F_{inf}+(1-\eta_d)F_d+(1-\eta_{iec})F_{iec}\big) + S_{PM}
+  -\big(F_{out}+\eta_r F_r + kV\big)P.
+\end{align}
+Here $F_{out}=F_{inf}+F_d+F_{iec}$ is the exfiltration and exhaust flow balancing the
+supply. The remaining parameters are:
+\begin{itemize}
+  \item $p=0.8$, the infiltration penetration factor;
+  \item $k=0.5$\,h$^{-1}$, the deposition rate;
+  \item $F_r=0.3$\,m$^3$\,s$^{-1}$ of HEPA H13 recirculation, $\eta_r=0.9995$;
+  \item $S_{PM}$, cooking and background emissions;
+  \item $g_{CO_2}=5.2$\,mL\,s$^{-1}$ per person.
+\end{itemize}
+Each balance is linear with coefficients held constant over a step. It is therefore
+integrated exactly as $y_{k+1}=y_\infty+(y_k-y_\infty)e^{-\kappa\Delta t}$, which stays
+stable for any removal rate $\kappa$. The outdoor PM$_{2.5}$ series is a
+Pune-representative monthly--diurnal profile with wet-weather wash-out (Section~\ref{sec:limits}).
+
+\subsection{Control strategies}
+All five controllers act on the same plant and the same occupancy-based comfort
+schedule. When a zone is occupied, the band is 23--26\,$^\circ$C, the summer range for
+air-conditioned buildings in the 2005 National Building Code of India \cite{nbc2005}
+(the 2016 edition moved to an adaptive model), and the setpoint is 24.5\,$^\circ$C. When it is unoccupied, the band is 16--29\,$^\circ$C and
+the setpoint is 28.5\,$^\circ$C. The original study gave the setpoint setback to only
+some controllers; here every controller uses the same schedule.
+
+\paragraph{Thermostat (baseline).}
+Each indoor unit runs at full capacity when the measured zone temperature exceeds the
+setpoint by 0.5\,K and stops at 0.5\,K below it. This is the behaviour of a typical
+residential split air conditioner.
+
+\paragraph{PID.}
+Three independent PI loops with a filtered derivative, back-calculation anti-windup and
+output limits $[0,\bar u_z]$. Gains follow the SIMC rules
+\cite{skogestad2003} for an integrating approximation of the identified zone response,
+$K_c=1/\big(k'(\tau_c+\theta)\big)$ and $T_i=\min\big(\tau,4(\tau_c+\theta)\big)$, with
+$\tau_c=15$\,min and $\theta=\Delta t/2$.
+
+\paragraph{Economic MPC (E-MPC).}
+Every hour the controller solves
+\begin{equation}
+\min_{U}\;\sum_{h=1}^{N_h}\sum_{z}\frac{\pi_h\,\mathrm{EIR}_T(\hat T_{o,h})}{\mathrm{COP}_r\,\mathrm{SHR}}U_{h,z}
++\rho\sum_{j=1}^{4N_h}\sum_z\Big(\big[\hat T_{a,z,j}-\overline T_{z,j}+\delta\big]_+^2+\big[\underline T_{z,j}+\delta-\hat T_{a,z,j}\big]_+^2\Big)
++\lambda\sum_h\|U_h-U_{h-1}\|^2 \label{eq:empc}
+\end{equation}
+subject to $0\le U_{h,z}\le\bar u_z$ and $\sum_z U_{h,z}\le \mathrm{SHR}\cdot Q_{cap}(\hat T_{o,h})$.
+In Eq.~\eqref{eq:empc}:
+\begin{itemize}
+  \item the inputs are held for each hour (move blocking) over a horizon of
+        $N_h=24$\,h, i.e. 96 model steps;
+  \item $\pi_h$ is the ToD tariff;
+  \item the comfort constraints are soft, with weight $\rho=50$\,INR\,K$^{-2}$ per step
+        and a back-off of $\delta=0.5$\,K;
+  \item $\lambda=0.05$\,INR\,kW$^{-2}$ penalises input moves.
+\end{itemize}
+Predictions $\hat T_a=\hat T_a^{free}+\Gamma U$ start from a steady-state Kalman filter
+on the model augmented with three integrating heat-disturbance states, which makes the
+predictions offset-free. They use weather forecasts whose dry-bulb error grows as
+$0.15\sqrt{h}$\,K (capped at 2\,K) and whose solar error is 10\,\%. The convex problem
+is solved with FISTA \cite{beck2009}, using an exact Euclidean projection onto the
+box-and-capacity set (120 iterations, warm-started).
+
+\paragraph{Deep Q-network (DQN).}
+One parameter-shared double DQN \cite{mnih2015,vanhasselt2016} acts for each zone. Its
+15 observable features are:
+\begin{itemize}
+  \item zone temperature error from the setpoint;
+  \item outdoor temperature and the 3-h forecast change;
+  \item hour of day and day of year, each as a sine/cosine pair;
+  \item tariff, current and next-hour occupancy, and the setpoint;
+  \item the previous action;
+  \item a one-hot zone index (3 features).
+\end{itemize}
+It chooses among five capacity levels (0, 25, 50, 75 and 100\,\%) every 15\,min. The
+reward is the negative sum of three terms, with the same comfort weight as the E-MPC:
+\begin{itemize}
+  \item the zone's share of the ToD electricity cost;
+  \item the squared comfort-band violation, weighted by $\beta=\rho$;
+  \item a switching penalty.
+\end{itemize}
+The network is a 64--64 ReLU multilayer perceptron trained with Huber loss, Adam
+($3\times10^{-4}$), gradient clipping, Polyak target updates and $\epsilon$-greedy
+exploration. Training uses 200 fourteen-day episodes. Each episode applies random
+perturbations to the typical year: dry-bulb $\pm1.5$\,K, solar gains $\pm15$\,\% and
+internal gains $\pm15$\,\%. The checkpoint is selected on greedy validation returns
+over five fixed, perturbed fortnights spread across the year, never on exploration
+returns. Training and test use the same plant, including the IEC and DOAS.
+In both training and deployment the DQN acts through a safety shield, the same kind of
+safety layer the Hybrid controller has. The shield:
+\begin{itemize}
+  \item forbids cooling when a zone is within 0.5\,K of its lower band or more than
+        1.5\,K below its setpoint;
+  \item enforces at least 50\,\% capacity when an occupied zone is 0.5\,K above its
+        upper band.
+\end{itemize}
+Following shielded reinforcement learning practice \cite{alshiekh2018}, the replay
+buffer stores the agent's \emph{proposed} action together with the outcome of the
+executed action. A penalty (5\,INR) is added whenever the shield overrides the
+proposal, so unsafe proposals learn low values. An unshielded agent is reported as an
+ablation.
+
+\paragraph{Hybrid (E-MPC + PI + safety).}
+The E-MPC supplies the hourly feed-forward $U_h$ and a 15-min reference trajectory
+$\hat T_a$. A PI layer tracks that reference:
+\begin{equation}
+u_k = \mathrm{sat}\big(U_h + K_h e_k + v_k\big),\qquad e_k = T_{a,k}^{meas}-\hat T_{a,k},
+\end{equation}
+with half the SIMC gain, leaky back-calculation integration, and activation only while
+the MPC is cooling or the zone is within $\delta$ of the upper band. It is intended to reject
+intra-hour disturbances that the hourly optimiser does not see: cooking, solar
+transients, and IEC/DOAS heat. Its measured contribution is reported in
+Section~\ref{sec:sens}. A safety layer enforces $u_z\ge0.8\bar u_z$ when an
+occupied zone exceeds the band by 0.5\,K.
+
+\subsection{Experimental design and metrics}
+Each controller is simulated over the full typical year at a 15-min step (35{,}040 steps).
+The main study is replicated with five seeds. Each seed changes the sensor noise, the
+forecast errors and, for the DQN, the training run. Results are reported as the mean
+with a 95\,\% $t$-interval. Paired comparisons use daily totals from seed~1, with a
+7-day moving-block bootstrap for the annual difference and the Wilcoxon signed-rank
+test. Additional single-seed scenarios cover robustness, sensitivity and ablation:
+\begin{itemize}
+  \item a +3\,K heatwave year;
+  \item thermal mass halved and doubled;
+  \item a flat tariff;
+  \item no plant--model mismatch;
+  \item a perfect-information E-MPC, as an upper bound;
+  \item MPC horizons of 6 and 12\,h;
+  \item DQN action resolutions of 3 and 9 levels;
+  \item three ventilation and filtration architectures.
+\end{itemize}
+
+The metrics are:
+\begin{itemize}
+  \item annual electricity by end use;
+  \item cost under an hourly three-tier ToD tariff (INR 5.20, 7.15 and 8.95\,kWh$^{-1}$;
+        a hypothetical structure kept from the original study, \emph{not} the MSEDCL
+        residential tariff). The actual MSEDCL residential structure, a flat energy
+        charge with a solar-hours (09:00--17:00) rebate of INR 0.80\,kWh$^{-1}$
+        \cite{merc}, is evaluated as a separate scenario;
+  \item 15-min peak demand;
+  \item the share of VRF energy used in peak-tariff hours;
+  \item operational CO$_2$ emissions (0.727\,kg\,kWh$^{-1}$, CEA grid weighted average \cite{cea});
+  \item occupied discomfort in K\,h, the sum of overheating above the band and
+        \emph{cooling-induced} overcooling below it;
+  \item the share of occupied zone-hours with acceptable conditions;
+  \item occupied RMSE from the setpoint;
+  \item hours with indoor RH above 70\,\%;
+  \item CO$_2$ and PM$_{2.5}$ exposure metrics;
+  \item compressor starts and controller computation time.
+\end{itemize}
+Cooling-induced overcooling is measured below $\min(\underline T, T^{free})$, where
+$T^{free}$ comes from a free-floating reference run without cooling. Because the
+dwelling has no heating, cold hours caused by the weather are not counted against any
+controller.
+
+\begin{table}[t]\centering\small
+\caption{Main model parameters (full list in \texttt{config/default\_config.m}).}\label{tab:params}
+\begin{tabular}{lccc}\toprule
+ & Zone 1 & Zone 2 & Zone 3\\\midrule
+Floor area (m$^2$) & 30 & 45 & 20\\
+Exterior wall length (m) / facades & 11 / S,W & 15 / N,W & 9.2 / N,E\\
+Air-node capacitance $C_a$ (MJ\,K$^{-1}$) & 0.55 & 0.83 & 0.37\\
+Mass-node capacitance $C_m$ (MJ\,K$^{-1}$) & 10.4 & 15.4 & 7.15\\
+Envelope conductance $UA$ (W\,K$^{-1}$) & 86.5 & 124.7 & 63.8\\
+Indoor-unit capacity (kW, total) & 3.5 & 5.0 & 2.5\\\midrule
+\multicolumn{4}{l}{Modal time constants: 0.35, 0.39, 0.43\,h (air); 24.7, 29.0, 36.0\,h (mass)}\\
+\bottomrule\end{tabular}
+\end{table}

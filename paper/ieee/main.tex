@@ -1,0 +1,55 @@
+\documentclass[conference]{IEEEtran}
+% IEEE conference template (IEEEtran). For a Transactions/journal submission,
+% change the option to [journal] and keep the rest unchanged.
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\graphicspath{{figures/}}
+\input{numbers}
+
+\begin{document}
+
+\title{Economic MPC, Deep Q-Learning and Hybrid Control of Residential Cooling in a
+Composite Climate: A Reproducible Year-Long Benchmark}
+
+\author{\IEEEauthorblockN{Anup Deshmukh}
+\IEEEauthorblockA{\textit{Department of Instrumentation and Control Engineering}\\
+\textit{Vishwakarma Institute of Technology}\\
+Pune, India\\
+\textcolor{red}{[e-mail]}}
+% \and
+% \IEEEauthorblockN{Co-author Name}
+% \IEEEauthorblockA{\textit{Department} \\ \textit{Institution}\\ City, Country \\ e-mail}
+}
+
+\maketitle
+
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+
+\begin{IEEEkeywords}
+Model predictive control, reinforcement learning, HVAC, building energy management,
+demand response, indoor air quality
+\end{IEEEkeywords}
+
+\input{body}
+
+\section*{Data Availability}
+The model, weather file and scripts that regenerate every table and figure are
+available at \textcolor{red}{[repository URL / Zenodo DOI]}.
+
+\section*{Acknowledgment}
+\textcolor{red}{[Funding, support and any AI-assistance disclosure required by the
+venue.]}
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

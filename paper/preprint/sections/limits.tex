@@ -1,0 +1,46 @@
+\section{Limitations}\label{sec:limits}
+\begin{itemize}
+\item \textbf{Simulation only, one dwelling, one typical year.} The plant is a reduced-order
+RC model. It has not been calibrated against measurements or cross-validated against a
+detailed whole-building simulation. An EnergyPlus model with the same geometry,
+constructions, gains and EPW file is released with the code
+(\texttt{validation/energyplus}), together with a script that compares free-floating
+temperatures and ideal cooling loads, but that comparison had not been run when this
+paper was written. The
+absolute energy figures should therefore be read as indicative; the comparisons
+between controllers, made on identical inputs, are more robust. Cross-validation
+against EnergyPlus is the most important next step.
+\item \textbf{Assumed inputs.} Envelope properties, gains, occupancy and equipment
+performance are assumed. A 40-sample variation of eleven of them leaves the controller
+ranking unchanged but changes the size of the savings (Section~\ref{sec:sens}).
+\item \textbf{Tuning on the evaluation year.} The E-MPC weights and back-off, the
+Hybrid gains and the DQN hyper-parameters were chosen during development by running on
+the same typical year that is used for evaluation. The DQN's validation weeks are also
+drawn from that year. The reported margins may therefore be slightly optimistic for an
+unseen year; the heatwave case is a partial out-of-sample test.
+\item \textbf{Assumed equipment curves.} The VRF rated COP, the part-load curve and the
+IEC effectiveness are generic values, not manufacturer data. The released configuration
+file allows them to be replaced.
+\item \textbf{Representative outdoor PM$_{2.5}$.} The outdoor series is a monthly--diurnal
+profile, not measured data. The IAQ results are therefore comparisons between
+architectures, not exposure estimates. Hourly CPCB monitoring data for Pune should
+replace it.
+\item \textbf{Single-volume IAQ.} CO$_2$, PM$_{2.5}$ and moisture are modelled as one
+well-mixed volume. Bedrooms with closed doors at night would see higher CO$_2$ than the
+whole-dwelling value reported here.
+\item \textbf{Dry-bulb comfort.} The comfort band is a static 23--26\,$^\circ$C. Indoor
+humidity is reported separately rather than combined into PMV or an adaptive (IMAC)
+index.
+\item \textbf{Deterministic schedules.} Occupancy, internal gains and cooking follow fixed
+weekday and weekend profiles, and occupants cannot override the controller.
+\item \textbf{DQN scope.} One value-based algorithm with a discrete action set, trained
+in simulation on perturbed copies of the same typical year. Policy-gradient and
+continuous-action methods, and training on multiple measured years, were not tested.
+\item \textbf{No heating.} The dwelling has no heating, so winter cold is outside the
+controllers' authority. It is excluded from the discomfort metric through the
+free-floating reference.
+\item \textbf{Economics.} The main three-tier ToD tariff is hypothetical, not a published
+MSEDCL schedule. The actual MSEDCL residential structure, a flat tariff and a steeper
+tariff are tested as sensitivities. One national grid emission factor is used
+(CEA, 0.727\,kgCO$_2$/kWh for FY2023--24). Demand charges and tariff revisions are not modelled.
+\end{itemize}

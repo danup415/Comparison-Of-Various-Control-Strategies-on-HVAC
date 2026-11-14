@@ -1,0 +1,46 @@
+\documentclass[runningheads]{llncs}
+% Springer LNCS template (llncs). For a Springer Nature journal, move the same
+% abstract, body and .bib into the sn-jnl template from the journal's author page.
+\usepackage{amsmath,amssymb}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\graphicspath{{figures/}}
+\input{numbers}
+
+\begin{document}
+
+\title{Economic MPC, Deep Q-Learning and Hybrid Control of Residential Cooling in a
+Composite Climate: A Reproducible Year-Long Benchmark}
+\titlerunning{MPC, DQN and Hybrid Control of Residential Cooling}
+
+\author{Anup Deshmukh\inst{1}}
+\authorrunning{A. Deshmukh}
+\institute{Department of Instrumentation and Control Engineering, Vishwakarma Institute
+of Technology, Pune, India\\
+\email{\textcolor{red}{[e-mail]}}}
+
+\maketitle
+
+\begin{abstract}
+\input{abstract}
+\keywords{Model predictive control \and Reinforcement learning \and HVAC \and
+Building energy management \and Demand response \and Indoor air quality}
+\end{abstract}
+
+\input{body}
+
+\subsubsection*{Data availability.}
+The model, weather file and scripts that regenerate every table and figure are
+available at \textcolor{red}{[repository URL / Zenodo DOI]}.
+
+\subsubsection*{Acknowledgements.}
+\textcolor{red}{[Funding, support and any AI-assistance disclosure required by the
+venue.]}
+
+\bibliographystyle{splncs04}
+\bibliography{refs}
+
+\end{document}

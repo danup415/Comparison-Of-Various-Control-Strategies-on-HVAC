@@ -1,0 +1,91 @@
+\section{Discussion}\label{sec:discussion}
+
+\paragraph{Advanced control buys comfort first, and savings second.}
+Against a realistic split-AC thermostat, none of the modulating controllers saves money
+in this dwelling. The thermostat's low cost is not efficiency: it comes from short,
+full-capacity bursts that overshoot below the comfort band (\KhColdTh\,K\,h of
+cooling-induced overcooling) and from about \StartsRatioTh{} times more compressor
+starts, and its 15-min peak demand is 21--26\,\% higher than that of PID, E-MPC and
+Hybrid. Studies that report large savings against weak or non-modulating baselines
+should therefore be read with care. The original version of this study is an example:
+its rule-based baseline cooled regardless of indoor temperature. The fair comparison is
+between controllers that deliver similar comfort. On that basis the Hybrid controller
+is \RelHybPidCost\,\% cheaper than SIMC-tuned PID and has \RelHybPidKh\,\% less
+discomfort. Both differences are statistically significant, and both hold under
+heatwave, thermal-mass and tariff variations.
+
+\paragraph{Why the Hybrid controller helps.}
+The economic MPC finds the cheap operating point: it keeps occupied zones just inside
+the upper comfort bound and pre-cools the slab at night when that pays. It does so with
+hourly decisions from a linear model that is about 10--15\,\% wrong and from imperfect
+forecasts. The ablations show that the Hybrid's two lower layers do different jobs.
+\begin{itemize}
+  \item The 15-min PI layer supplies essentially all of the cost saving over E-MPC.
+  \item Most of the comfort gain comes from the E-MPC with the safety override alone,
+        which forces near-full capacity in an occupied zone that exceeds the band.
+\end{itemize}
+The perfect-information ablation is consistent with this: a better model and perfect
+weather do not close the gap, so the gap comes from features outside the MPC's linear
+model and from its choice to run close to the bound. The heatwave back-off test points
+the same way. Comfort under sustained heat is governed mainly by how much margin the
+controller keeps, not by how well it predicts.
+
+\paragraph{Little ToD arbitrage.}
+The ToD tariff barely moves the load in this dwelling, even under an economic MPC with a
+24-h horizon:
+\begin{itemize}
+  \item every kWh of peak-window cooling serves an occupied zone, so it cannot be
+        dropped without discomfort (occupied zone-hours fall in the peak windows
+        slightly less often than hours in general: 27\,\% against 33\,\%);
+  \item the heat stored in the roof slab is released in the afternoon and evening:
+        mean slab-to-air heat flow is about 2.5\,kW during 18:00--23:00, against
+        1.8\,kW at 10:00--16:00;
+  \item the peak-to-off-peak price ratio (1.7) is modest. At 3.6:1 the predictive
+        controllers move about 5 percentage points of cooling energy out of the peak
+        windows.
+\end{itemize}
+The night pre-cooling we observe mainly reduces late-morning demand, which falls in a
+normal-tariff window. Larger demand shifting would need steeper tariffs than the one tested here,
+thermal storage or a roof with more accessible mass. The original study reported
+evidence of tariff-driven shifting; with real hourly profiles and costs, that evidence
+does not survive.
+
+\paragraph{Reinforcement learning needs engineering to be competitive.}
+An unconstrained DQN learned to cool through the winter, because "do nothing" is
+rarely rewarded once weather-driven cold is excluded from the penalty. That agent was
+uncompetitive. Two changes made the DQN competitive with E-MPC on comfort and with
+PID-to-MPC on cost:
+\begin{itemize}
+  \item a safety shield, with the agent's own proposals stored for learning;
+  \item checkpoint selection on a separate validation set.
+\end{itemize}
+The DQN also needs no model at run time. Its seed-to-seed spread is an order of
+magnitude larger than that of the model-based controllers, so a single training run is
+not a reliable estimate of performance. This supports the protocol used here: several
+seeds, a validation set separate from the test year, and robustness checks on weather
+not seen in training.
+
+\paragraph{IAQ is decided by design, not by the thermostat logic.}
+Indoor CO$_2$ and PM$_{2.5}$ are essentially identical across thermal controllers. They
+are governed by the ventilation rate and the filtration architecture: the recirculating
+HEPA filter alone reduces mean PM$_{2.5}$ more than threefold. Humid hours are where
+design and control interact. The demand-controlled dehumidifying DOAS cuts occupied
+hours above 70\,\% RH by about a factor of seven compared with no mechanical
+ventilation, and the steadier modulating controllers remove more moisture than the
+thermostat. The DOAS (fans and coil) uses about a quarter of annual electricity in this
+climate. That load deserves its own optimisation, for example demand-controlled
+ventilation or a combined IAQ-thermal MPC.
+
+\paragraph{Practical implications.}
+For Indian homes with inverter VRF or multi-split systems:
+\begin{enumerate}
+  \item Modulating control in place of thermostat on/off is the largest gain. It
+        delivers comfort and fewer compressor starts, and with PID or the model-based
+        controllers about 18\,\% lower peak demand.
+  \item A hybrid MPC plus feedback architecture adds a further 3--4\,\% cost reduction
+        over well-tuned PID at better comfort.
+  \item Ventilation and filtration design decide IAQ and should be treated as a design
+        variable of equal standing.
+\end{enumerate}
+The computational cost of the MPC (\MsMpc\,ms per hourly solve in interpreted
+MATLAB/Octave) is compatible with an embedded gateway.
