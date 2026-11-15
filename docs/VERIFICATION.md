@@ -10,6 +10,8 @@ This file records what was checked after the rebuild, how each item was checked,
 | Noise-free 14-day run, MATLAB vs Octave 10.3 | Identical to about 1e-12 |
 | Annual KPIs, MATLAB vs Octave (same seed) | Differ by 0.5 % or less, because the platforms' random-number streams differ |
 | Simulink wrapper (`simulink/check_simulink_equivalence.m`), 7 days, PID and Hybrid | max abs(dTa) = 0, max abs(dP) = 0 over 672 samples |
+| Block-diagram Simulink model (`simulink/check_simulink_model.m`), 7 days, all five controllers | max abs(dTa) < 2e-13 K; power, humidity, CO2 and PM2.5 agree to rounding error |
+| Same model, full year (35,040 steps), Hybrid | max abs(dTa) = 5.6e-13 K |
 | Ideal sensible cooling loads (RC model) | [3300 7365 2355] kWh, identical in MATLAB and Octave |
 
 Two portability fixes came out of these checks:

@@ -11,7 +11,7 @@ validation/energyplus/comparison.csv
 # Simulink build products
 *.slxc
 slprj/
-simulink/*.slx
+simulink/Pune_HVAC_DT.slx
 
 # MATLAB / Octave
 *.asv

@@ -64,22 +64,47 @@ src/controllers/             thermostat, PID, E-MPC (FISTA + Kalman), DQN + shie
 src/sim/                     simulation engine, scenarios, uncertainty samples, run_case
 src/metrics/                 KPIs, paired statistics, aggregation, uncertainty analysis
 src/viz/                     figure generation
-simulink/                    Simulink wrapper around the same engine + equivalence check
+simulink/                    block-diagram Simulink model (.slx), its builder and equivalence check
 tests/                       unit/regression tests, engine and tariff-mechanism checks
 validation/energyplus/       EnergyPlus model of the same apartment + comparison script
 results/                     tables (csv/tex), figures (png), summary.md, trained DQN policies
-paper/ieee/                  paper in IEEE conference format (IEEEtran)
-paper/springer/              paper in Springer LNCS format (llncs)
-paper/preprint/              long-form preprint (article class) + numbers generator
+Pune_HVAC_Springer_LNCS_final.pdf   the paper (Springer LNCS format)
 docs/                        verification record and change log
 ```
 
 ## Simulink
 
-- `simulink/build_simulink_wrapper.m` builds a fixed-step (900 s) Simulink model whose
-  MATLAB Function block calls the same engine (`sl_engine.m`).
-- `check_simulink_equivalence.m` compares it with `simulate.m`. In MATLAB R2024a the
-  outputs matched exactly over a 7-day test.
+`simulink/Pune_HVAC_BlockDiagram.slx` is a block-diagram version of the whole study.
+
+![Simulink model](results/figures/Simulink_top.png)
+
+- **Native blocks:**
+  - the building's RC network, as a Discrete State-Space block with the exact
+    zero-order-hold matrices;
+  - weather, disturbance and sensor-noise inputs;
+  - sensors, gains, unit delays, the controller selector and power summation.
+- **MATLAB Function subsystems:** the VRF, IEC, DOAS + ERV, the moisture/CO2/PM2.5
+  balances and the five controllers. They call `sl_blocks.m`, which uses the same
+  equations and controller functions as the MATLAB engine.
+
+To run it:
+
+```matlab
+>> setup_paths
+>> SL = sl_blocks('init', 'base', 'hybrid', 1, 7);   % scenario, controller, seed, days
+>> assignin('base', 'SL', SL);
+>> mdl = build_pune_simulink_model(7);  out = sim(mdl);
+```
+
+`SL.CTRL` selects the controller: 1 thermostat, 2 PID, 3 E-MPC, 4 DQN, 5 Hybrid.
+
+`check_simulink_model.m` runs each controller in Simulink and in MATLAB and compares
+them. In MATLAB R2024a, the largest differences were:
+- 7 days, all five controllers: below 2e-13 K;
+- full year, Hybrid controller: below 6e-13 K.
+
+The results are in `results/tables/simulink_check*.csv`. The older single-block wrapper
+(`build_simulink_wrapper.m`) is kept for reference.
 
 ## EnergyPlus cross-check (not yet run)
 
